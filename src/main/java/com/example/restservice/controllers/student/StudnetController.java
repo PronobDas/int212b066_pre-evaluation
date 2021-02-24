@@ -25,5 +25,53 @@ import com.example.restservice.repository.StudentRepository;
 @CrossOrigin
 @RequestMapping("/api")
 public class StudnetController {
+    @Autowired
+    StudentRepository studentRepository;
 
+    @GetMapping("/students")
+    public ResponseEntity<List<Student>> getAllStudents(@RequestParam(required = false) String name) {
+        try {
+            List<Student> students = new ArrayList<Student>();
+
+            if (name == null)
+                studentRepository.findAll().forEach(students::add);
+            else
+                studentRepository.findByName(name).forEach(students::add);
+
+            if (students.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/students/?name={name}")
+    public ResponseEntity<List<Student>> getStudentByName(@PathVariable("name") String name) {
+        try {
+            List<Student> students = new ArrayList<Student>();
+
+            studentRepository.findByName(name).forEach(students::add);
+
+            if (students.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            return new ResponseEntity<>(students, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/students")
+    public ResponseEntity<Student> createTutorial(@RequestBody Student student) {
+        try {
+            Student _student = studentRepository.save(new Student(student.getName(), student.getEmail(), student.getContact_no(), student.getDateOB()));
+            return new ResponseEntity<>(_student, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
